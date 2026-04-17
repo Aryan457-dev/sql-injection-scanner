@@ -1,8 +1,8 @@
-import requests
-import tkinter as tk
-from tkinter import messagebox, scrolledtext
+from flask import Flask, request, jsonify, send_from_directory
+import requests as req
 
-# Payloads
+app = Flask(__name__, static_folder='static')
+
 payloads = [
     "' OR '1'='1",
     "' OR 1=1 --",
@@ -12,96 +12,68 @@ payloads = [
     "' OR 1=1#"
 ]
 
+ERROR_KEYWORDS = [
+    "sql syntax", "mysql_fetch", "ora-", "odbc driver",
+    "sqlite_", "pg_query", "syntax error", "unclosed quotation"
+]
+
+@app.route('/')
+def index():
+    return send_from_directory('static', 'index.html')
+
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory('static', path)
+
+@app.route('/scan', methods=['POST'])
 def scan():
-    url = entry_url.get()
-    method = method_var.get()
+    data = request.json
+    url = data.get('url', '').strip()
+    method = data.get('method', 'GET')
+    timeout = int(data.get('timeout', 5))
 
     if not url:
-        messagebox.showerror("Error", "Enter a valid URL")
-        return
+        return jsonify({'error': 'No URL provided'}), 400
 
-    result_text.delete(1.0, tk.END)
-    result_text.insert(tk.END, f"[+] Scanning: {url}\n\n", "info")
-
-    vulnerable = False
-
+    results = []
     try:
-        # Normal response
-        if method == "GET":
-            normal_response = requests.get(url)
+        if method == 'GET':
+            baseline = req.get(url, timeout=timeout, verify=False)
         else:
-            normal_response = requests.post(url, data={"input": "test"})
-
-        normal_length = len(normal_response.text)
-
-        for payload in payloads:
-            if method == "GET":
-                test_url = url + payload
-                response = requests.get(test_url)
-            else:
-                response = requests.post(url, data={"input": payload})
-
-            test_length = len(response.text)
-
-            if abs(normal_length - test_length) > 50:
-                result_text.insert(
-                    tk.END,
-                    f"[!!!] SQL Injection Detected!\nPayload: {payload}\n\n",
-                    "vuln"
-                )
-                vulnerable = True
-
+            baseline = req.post(url, data={'input': 'test'}, timeout=timeout, verify=False)
+        normal_length = len(baseline.text)
     except Exception as e:
-        result_text.insert(tk.END, f"Error: {e}\n", "error")
+        return jsonify({'error': f'Baseline request failed: {str(e)}'}), 500
 
-    if not vulnerable:
-        result_text.insert(
-            tk.END,
-            "[-] No SQL Injection vulnerability detected.\n",
-            "safe"
-        )
+    for payload in payloads:
+        try:
+            if method == 'GET':
+                response = req.get(url + payload, timeout=timeout, verify=False)
+            else:
+                response = req.post(url, data={'input': payload}, timeout=timeout, verify=False)
 
-    save_report(url, result_text.get(1.0, tk.END))
+            diff = abs(normal_length - len(response.text))
+            error_found = any(k in response.text.lower() for k in ERROR_KEYWORDS)
+            vulnerable = diff > 50 or error_found
+
+            results.append({
+                'payload': payload,
+                'diff': diff,
+                'vulnerable': vulnerable,
+                'error_keyword': error_found
+            })
+        except Exception as e:
+            results.append({
+                'payload': payload,
+                'diff': 0,
+                'vulnerable': False,
+                'error': str(e)
+            })
+
+    return jsonify({'baseline': normal_length, 'results': results})
 
 
-def save_report(url, content):
-    with open("report.txt", "w") as file:
-        file.write(f"Scan Report for {url}\n\n")
-        file.write(content)
-
-
-# GUI Setup
-root = tk.Tk()
-root.title("VulnScan Pro - SQL Injection Detector")
-root.geometry("700x500")
-root.configure(bg="#0f172a")  # Dark background
-
-# Title
-title = tk.Label(root, text="SQL Injection Scanner", font=("Arial", 18, "bold"), fg="#38bdf8", bg="#0f172a")
-title.pack(pady=10)
-
-# URL Input
-tk.Label(root, text="Target URL:", fg="white", bg="#0f172a").pack()
-entry_url = tk.Entry(root, width=70, bg="#1e293b", fg="white", insertbackground="white")
-entry_url.pack(pady=5)
-
-# Method Dropdown
-tk.Label(root, text="Method:", fg="white", bg="#0f172a").pack()
-method_var = tk.StringVar(value="GET")
-tk.OptionMenu(root, method_var, "GET", "POST").pack(pady=5)
-
-# Scan Button
-scan_btn = tk.Button(root, text="Start Scan", command=scan, bg="#38bdf8", fg="black", width=20)
-scan_btn.pack(pady=10)
-
-# Result Box
-result_text = scrolledtext.ScrolledText(root, height=15, width=80, bg="#020617", fg="white")
-result_text.pack(pady=10)
-
-# Color tags
-result_text.tag_config("vuln", foreground="red")
-result_text.tag_config("safe", foreground="green")
-result_text.tag_config("info", foreground="cyan")
-result_text.tag_config("error", foreground="orange")
-
-root.mainloop()
+if __name__ == '__main__':
+    print("\n  VulnScan Pro — Flask Backend")
+    print("  http://localhost:5122\n")
+    app.run(debug=True, port=5122)

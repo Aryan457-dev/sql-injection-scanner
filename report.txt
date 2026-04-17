@@ -1,11 +1,7 @@
-Scan Report for http://localhost:3000/rest/products/search?q=
+Scan Report for https://dccveengine-vm.eastus.cloudapp.azure.com
 
-[+] Scanning: http://localhost:3000/rest/products/search?q=
+[+] Scanning: https://dccveengine-vm.eastus.cloudapp.azure.com
 
-[!!!] SQL Injection Detected!
-Payload: ' OR 1=1 --
-
-[!!!] SQL Injection Detected!
-Payload: " OR "1"="1
-
+Error: HTTPSConnectionPool(host="dccveengine-vm.eastus.cloudapp.azure.com'%20or%20'1'='1", port=443): Max retries exceeded with url: / (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x1026534d0>: Failed to resolve 'dccveengine-vm.eastus.cloudapp.azure.com'%20or%20'1'='1' ([Errno 8] nodename nor servname provided, or not known)"))
+[-] No SQL Injection vulnerability detected.
 

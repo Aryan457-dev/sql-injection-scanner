@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VulnScan Pro — SQL Injection Scanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="noise"></div>
+
+  <div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <polygon points="11,2 20,7 20,15 11,20 2,15 2,7" stroke="#00ff9d" stroke-width="1.5" fill="none"/>
+            <circle cx="11" cy="11" r="3" fill="#00ff9d"/>
+            <line x1="11" y1="2" x2="11" y2="8" stroke="#00ff9d" stroke-width="1"/>
+            <line x1="11" y1="14" x2="11" y2="20" stroke="#00ff9d" stroke-width="1"/>
+            <line x1="2" y1="7" x2="8" y2="9.5" stroke="#00ff9d" stroke-width="1"/>
+            <line x1="14" y1="12.5" x2="20" y2="15" stroke="#00ff9d" stroke-width="1"/>
+            <line x1="2" y1="15" x2="8" y2="12.5" stroke="#00ff9d" stroke-width="1"/>
+            <line x1="14" y1="9.5" x2="20" y2="7" stroke="#00ff9d" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">VulnScan</span>
+          <span class="brand-version">PRO v2.1</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <div class="nav-section-label">MODULES</div>
+        <a class="nav-item active" href="#">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="8" width="5" height="5" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="8" width="5" height="5" stroke="currentColor" stroke-width="1.2"/></svg>
+          SQL Injection
+          <span class="nav-badge">ACTIVE</span>
+        </a>
+        <a class="nav-item disabled" href="#">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.2"/><line x1="7" y1="4" x2="7" y2="7" stroke="currentColor" stroke-width="1.2"/><circle cx="7" cy="9.5" r="0.8" fill="currentColor"/></svg>
+          XSS Scanner
+          <span class="nav-badge locked">SOON</span>
+        </a>
+        <a class="nav-item disabled" href="#">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2v10" stroke="currentColor" stroke-width="1.2"/><rect x="3" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.2"/></svg>
+          CSRF Tester
+          <span class="nav-badge locked">SOON</span>
+        </a>
+
+        <div class="nav-section-label" style="margin-top:24px;">SETTINGS</div>
+        <a class="nav-item" href="#">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2M2.8 2.8l1.4 1.4M9.8 9.8l1.4 1.4M2.8 11.2l1.4-1.4M9.8 4.2l1.4-1.4" stroke="currentColor" stroke-width="1.2"/></svg>
+          Configuration
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="2" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1.2"/><line x1="4" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1.2"/><line x1="4" y1="7.5" x2="8" y2="7.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          Reports
+        </a>
+      </nav>
+
+      <div class="sidebar-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusLabel">IDLE</span>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- Top bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="topbar-title">SQL INJECTION SCANNER</span>
+          <span class="topbar-sep">/</span>
+          <span class="topbar-sub">OWASP A03:2021 — Injection</span>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-stat">
+            <span class="ts-label">PAYLOADS</span>
+            <span class="ts-val" id="statPayloads">6</span>
+          </div>
+          <div class="topbar-stat">
+            <span class="ts-label">VULNS</span>
+            <span class="ts-val danger" id="statVulns">0</span>
+          </div>
+          <div class="topbar-stat">
+            <span class="ts-label">CLEAN</span>
+            <span class="ts-val safe" id="statClean">0</span>
+          </div>
+          <div class="clock" id="clock">00:00:00</div>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <!-- Left column -->
+        <div class="col-left">
+
+          <!-- Target config -->
+          <section class="panel">
+            <div class="panel-header">
+              <span class="panel-title">TARGET CONFIGURATION</span>
+              <div class="panel-line"></div>
+            </div>
+
+            <div class="field">
+              <label class="field-label">TARGET URL</label>
+              <div class="input-wrap">
+                <span class="input-prefix">›_</span>
+                <input type="text" id="urlInput" class="url-input" placeholder="http://target.local/page?id=1" autocomplete="off" spellcheck="false"/>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field half">
+                <label class="field-label">HTTP METHOD</label>
+                <div class="select-wrap">
+                  <select id="methodSelect" class="custom-select">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                  </select>
+                  <span class="select-arrow">▾</span>
+                </div>
+              </div>
+              <div class="field half">
+                <label class="field-label">TIMEOUT (s)</label>
+                <div class="input-wrap">
+                  <input type="number" id="timeout" class="url-input" value="5" min="1" max="30" style="padding-left:14px;"/>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field-label">DETECTION METHODS</label>
+              <div class="toggle-group">
+                <label class="toggle-item">
+                  <input type="checkbox" checked id="toggleLength"/>
+                  <span class="toggle-box"></span>
+                  <span>Response Length</span>
+                </label>
+                <label class="toggle-item">
+                  <input type="checkbox" checked id="toggleError"/>
+                  <span class="toggle-box"></span>
+                  <span>Error Keywords</span>
+                </label>
+                <label class="toggle-item">
+                  <input type="checkbox" id="toggleTime"/>
+                  <span class="toggle-box"></span>
+                  <span>Time-based (blind)</span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <!-- Payloads -->
+          <section class="panel">
+            <div class="panel-header">
+              <span class="panel-title">PAYLOAD QUEUE</span>
+              <div class="panel-line"></div>
+            </div>
+            <div class="payload-list" id="payloadList">
+              <div class="payload-row" data-idx="0">
+                <span class="payload-idx">01</span>
+                <span class="payload-code">' OR '1'='1</span>
+                <span class="payload-status" id="ps-0">—</span>
+              </div>
+              <div class="payload-row" data-idx="1">
+                <span class="payload-idx">02</span>
+                <span class="payload-code">' OR 1=1 --</span>
+                <span class="payload-status" id="ps-1">—</span>
+              </div>
+              <div class="payload-row" data-idx="2">
+                <span class="payload-idx">03</span>
+                <span class="payload-code">' OR 'a'='a</span>
+                <span class="payload-status" id="ps-2">—</span>
+              </div>
+              <div class="payload-row" data-idx="3">
+                <span class="payload-idx">04</span>
+                <span class="payload-code">" OR "1"="1</span>
+                <span class="payload-status" id="ps-3">—</span>
+              </div>
+              <div class="payload-row" data-idx="4">
+                <span class="payload-idx">05</span>
+                <span class="payload-code">' OR ''='</span>
+                <span class="payload-status" id="ps-4">—</span>
+              </div>
+              <div class="payload-row" data-idx="5">
+                <span class="payload-idx">06</span>
+                <span class="payload-code">' OR 1=1#</span>
+                <span class="payload-status" id="ps-5">—</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Scan button -->
+          <button class="scan-btn" id="scanBtn" onclick="startScan()">
+            <span class="scan-btn-inner">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="currentColor"/></svg>
+              EXECUTE SCAN
+            </span>
+            <div class="scan-btn-glow"></div>
+          </button>
+
+        </div>
+
+        <!-- Right column -->
+        <div class="col-right">
+
+          <!-- Progress -->
+          <section class="panel" id="progressPanel">
+            <div class="panel-header">
+              <span class="panel-title">SCAN PROGRESS</span>
+              <div class="panel-line"></div>
+              <span class="panel-pct" id="progressPct">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+              <div class="progress-pulse" id="progressPulse"></div>
+            </div>
+            <div class="progress-labels">
+              <span id="progressPhase">Awaiting target...</span>
+              <span id="progressCount">0 / 6</span>
+            </div>
+          </section>
+
+          <!-- Terminal output -->
+          <section class="panel terminal-panel">
+            <div class="panel-header">
+              <span class="panel-title">TERMINAL OUTPUT</span>
+              <div class="panel-line"></div>
+              <button class="clear-btn" onclick="clearLog()">CLEAR</button>
+            </div>
+            <div class="terminal" id="terminal">
+              <div class="term-line muted">┌─ VulnScan Pro v2.1 initialized</div>
+              <div class="term-line muted">├─ SQLi module loaded — 6 payloads ready</div>
+              <div class="term-line muted">└─ Awaiting target URL...</div>
+              <div class="term-cursor" id="cursor">█</div>
+            </div>
+          </section>
+
+          <!-- Results table -->
+          <section class="panel" id="resultsSection" style="display:none;">
+            <div class="panel-header">
+              <span class="panel-title">VULNERABILITY REPORT</span>
+              <div class="panel-line"></div>
+              <button class="clear-btn" onclick="downloadReport()">↓ EXPORT</button>
+            </div>
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>PAYLOAD</th>
+                  <th>Δ BYTES</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody"></tbody>
+            </table>
+          </section>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
