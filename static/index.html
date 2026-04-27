@@ -31,7 +31,7 @@
         </div>
         <div class="brand-text">
           <span class="brand-name">VulnScan</span>
-          <span class="brand-version">PRO v2.1</span>
+          <span class="brand-version">PRO v3.0</span>
         </div>
       </div>
 
@@ -82,16 +82,16 @@
         </div>
         <div class="topbar-right">
           <div class="topbar-stat">
-            <span class="ts-label">PAYLOADS</span>
-            <span class="ts-val" id="statPayloads">6</span>
+            <span class="ts-label">TESTS</span>
+            <span class="ts-val" id="statPayloads">0</span>
           </div>
           <div class="topbar-stat">
             <span class="ts-label">VULNS</span>
             <span class="ts-val danger" id="statVulns">0</span>
           </div>
           <div class="topbar-stat">
-            <span class="ts-label">CLEAN</span>
-            <span class="ts-val safe" id="statClean">0</span>
+            <span class="ts-label">RISK</span>
+            <span class="ts-val" id="statRisk" style="color:var(--text-dim);">—</span>
           </div>
           <div class="clock" id="clock">00:00:00</div>
         </div>
@@ -131,70 +131,49 @@
               <div class="field half">
                 <label class="field-label">TIMEOUT (s)</label>
                 <div class="input-wrap">
-                  <input type="number" id="timeout" class="url-input" value="5" min="1" max="30" style="padding-left:14px;"/>
+                  <input type="number" id="timeout" class="url-input" value="8" min="1" max="30" style="padding-left:14px;"/>
                 </div>
               </div>
             </div>
 
             <div class="field">
-              <label class="field-label">DETECTION METHODS</label>
+              <label class="field-label">DETECTION TECHNIQUES</label>
               <div class="toggle-group">
-                <label class="toggle-item">
-                  <input type="checkbox" checked id="toggleLength"/>
-                  <span class="toggle-box"></span>
-                  <span>Response Length</span>
-                </label>
                 <label class="toggle-item">
                   <input type="checkbox" checked id="toggleError"/>
                   <span class="toggle-box"></span>
-                  <span>Error Keywords</span>
+                  <span>Error-based</span>
                 </label>
                 <label class="toggle-item">
-                  <input type="checkbox" id="toggleTime"/>
+                  <input type="checkbox" checked id="toggleUnion"/>
+                  <span class="toggle-box"></span>
+                  <span>UNION-based</span>
+                </label>
+                <label class="toggle-item">
+                  <input type="checkbox" checked id="toggleTime"/>
                   <span class="toggle-box"></span>
                   <span>Time-based (blind)</span>
                 </label>
               </div>
             </div>
+
+            <!-- Auto-detected params display -->
+            <div class="field" id="paramField" style="display:none;">
+              <label class="field-label">AUTO-DETECTED PARAMETERS</label>
+              <div id="paramList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;"></div>
+            </div>
           </section>
 
-          <!-- Payloads -->
+          <!-- Payload Queue — now shows technique categories -->
           <section class="panel">
             <div class="panel-header">
               <span class="panel-title">PAYLOAD QUEUE</span>
               <div class="panel-line"></div>
+              <span id="payloadCount" style="font-size:10px;color:var(--cyan);font-family:var(--head);font-weight:700;">20 LOADED</span>
             </div>
             <div class="payload-list" id="payloadList">
-              <div class="payload-row" data-idx="0">
-                <span class="payload-idx">01</span>
-                <span class="payload-code">' OR '1'='1</span>
-                <span class="payload-status" id="ps-0">—</span>
-              </div>
-              <div class="payload-row" data-idx="1">
-                <span class="payload-idx">02</span>
-                <span class="payload-code">' OR 1=1 --</span>
-                <span class="payload-status" id="ps-1">—</span>
-              </div>
-              <div class="payload-row" data-idx="2">
-                <span class="payload-idx">03</span>
-                <span class="payload-code">' OR 'a'='a</span>
-                <span class="payload-status" id="ps-2">—</span>
-              </div>
-              <div class="payload-row" data-idx="3">
-                <span class="payload-idx">04</span>
-                <span class="payload-code">" OR "1"="1</span>
-                <span class="payload-status" id="ps-3">—</span>
-              </div>
-              <div class="payload-row" data-idx="4">
-                <span class="payload-idx">05</span>
-                <span class="payload-code">' OR ''='</span>
-                <span class="payload-status" id="ps-4">—</span>
-              </div>
-              <div class="payload-row" data-idx="5">
-                <span class="payload-idx">06</span>
-                <span class="payload-code">' OR 1=1#</span>
-                <span class="payload-status" id="ps-5">—</span>
-              </div>
+              <!-- Dynamically populated by script.js -->
+              <div class="term-line muted" style="font-size:11px;padding:6px 0;">Enter URL to preview payload queue...</div>
             </div>
           </section>
 
@@ -225,7 +204,36 @@
             </div>
             <div class="progress-labels">
               <span id="progressPhase">Awaiting target...</span>
-              <span id="progressCount">0 / 6</span>
+              <span id="progressCount">0 / 0</span>
+            </div>
+          </section>
+
+          <!-- Risk Score panel — hidden until scan complete -->
+          <section class="panel" id="riskPanel" style="display:none;">
+            <div class="panel-header">
+              <span class="panel-title">RISK ASSESSMENT</span>
+              <div class="panel-line"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:20px;">
+              <!-- Score gauge -->
+              <div style="position:relative;width:80px;height:80px;flex-shrink:0;">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="var(--border2)" stroke-width="6"/>
+                  <circle cx="40" cy="40" r="32" fill="none" stroke-width="6"
+                    id="riskArc"
+                    stroke-dasharray="0 201"
+                    stroke-linecap="round"
+                    style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dasharray 1s ease;"/>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                  <span id="riskScoreNum" style="font-family:var(--head);font-size:22px;font-weight:700;line-height:1;color:#fff;">0</span>
+                </div>
+              </div>
+              <div>
+                <div style="font-family:var(--head);font-size:28px;font-weight:700;letter-spacing:2px;" id="riskLabelText">—</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-top:4px;" id="riskSummaryText">Run a scan to see risk assessment</div>
+                <div style="display:flex;gap:12px;margin-top:10px;" id="riskBadges"></div>
+              </div>
             </div>
           </section>
 
@@ -237,12 +245,23 @@
               <button class="clear-btn" onclick="clearLog()">CLEAR</button>
             </div>
             <div class="terminal" id="terminal">
-              <div class="term-line muted">┌─ VulnScan Pro v2.1 initialized</div>
-              <div class="term-line muted">├─ SQLi module loaded — 6 payloads ready</div>
+              <div class="term-line muted">┌─ VulnScan Pro v3.0 initialized</div>
+              <div class="term-line muted">├─ SQLi module loaded — 20 payloads ready</div>
+              <div class="term-line muted">├─ Techniques: error-based, UNION, time-based blind</div>
               <div class="term-line muted">└─ Awaiting target URL...</div>
               <div class="term-cursor" id="cursor">█</div>
             </div>
           </section>
+            <!-- Scan button -->
+          <button class="scan-btn" id="scanBtn" onclick="startScan()">
+            <span class="scan-btn-inner">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="currentColor"/></svg>
+              EXECUTE SCAN
+            </span>
+            <div class="scan-btn-glow"></div>
+          </button>
+
+        </div>
 
           <!-- Results table -->
           <section class="panel" id="resultsSection" style="display:none;">
@@ -256,7 +275,10 @@
                 <tr>
                   <th>#</th>
                   <th>PAYLOAD</th>
+                  <th>TECHNIQUE</th>
+                  <th>PARAM</th>
                   <th>Δ BYTES</th>
+                  <th>TIME</th>
                   <th>STATUS</th>
                 </tr>
               </thead>
@@ -268,6 +290,7 @@
       </div>
     </main>
   </div>
+ 
 
   <script src="/static/script.js"></script>
 </body>

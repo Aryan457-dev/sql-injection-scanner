@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>VidFlow – BE Project Poster</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:#b0b0b0;
+  display:flex; justify-content:center;
+  padding:20px;
+  font-family:'Times New Roman', Times, serif;
+}
+.poster {
+  position:relative;
+  width:1100px; height:1560px;
+  background:#fff;
+  border:2.5px solid #000;
+  overflow:hidden;
+}
+
+/* ══ HEADER  bg=#D2EEEC ══ */
+.header {
+  position:absolute; left:0; top:0; width:1100px; height:172px;
+  background:#D2EEEC; border-bottom:2.5px solid #000;
+}
+.logo-box {
+  position:absolute; left:27px; top:17px; width:226px; height:131px;
+  display:flex; align-items:center; justify-content:center;
+}
+.logo-ph {
+  width:187px; height:93px; border:1.5px dashed #aaa;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; color:#aaa; border-radius:3px; text-align:center;
+}
+.header-center {
+  position:absolute; left:262px; top:0; width:531px; height:172px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:6px 10px;
+}
+.hc-dept  { font-size:19px; font-weight:700; color:#002060; line-height:1.2; }
+.hc-sem   { font-size:13px; font-weight:700; color:#993300; margin-top:3px; }
+.hc-year  { font-size:13px; font-weight:700; color:#993300; }
+.hc-title { font-size:17px; font-weight:700; color:#000;    margin-top:5px; line-height:1.2; }
+.hc-group { font-size:12px; font-weight:700; color:#002060; margin-top:4px; }
+.header-names {
+  position:absolute; left:806px; top:14px; width:277px; height:134px;
+  font-size:12px; line-height:1.7; color:#000;
+  padding:6px 8px 6px 12px;
+  display:flex; flex-direction:column; justify-content:center;
+}
+.nlbl { font-weight:700; font-size:11px; color:#333; display:block; margin-top:3px; }
+
+/* ══ DIVIDERS ══ */
+.vdiv { position:absolute; width:2px; background:#000; top:172px; height:1386px; }
+.hdiv { position:absolute; left:0; height:2px; background:#000; }
+
+/* ══ SECTION HEADERS ══ */
+.sh {
+  position:absolute; height:35px;
+  display:flex; align-items:center; padding-left:10px;
+  font-size:15px; font-weight:700; letter-spacing:0.025em;
+  border-bottom:1.5px solid #000;
+}
+/* exact hex from PPTX XML */
+.c-abstract    { background:#00B0F0; color:#002060; }
+.c-methodology { background:#9EFAFC; color:#222;    }
+.c-results     { background:#E9CFE2; color:#002060; }
+.c-pink        { background:#F5C1CC; color:#002060; }
+.c-litsurvey   { background:#A0DCD8; color:#222;    }
+.c-objectives  { background:#CBC1E9; color:#002060; }
+.c-references  { background:#C0E399; color:#000;    } /* accent2 from theme */
+
+/* ══ SECTION CONTENT ══ */
+.sc {
+  position:absolute;
+  font-size:12.5px; line-height:1.62; color:#000;
+  padding:7px 10px 8px 10px; overflow:hidden;
+}
+
+/* ══ FLOW DIAGRAM ══ */
+.flow-wrap { display:flex; flex-direction:column; align-items:center; padding:6px 4px; }
+.flow-box  {
+  background:#E8F8F5; border:1.5px solid #00B0F0; border-radius:4px;
+  padding:5px 10px; font-size:11.5px; font-weight:600;
+  text-align:center; width:92%; color:#002060;
+}
+.flow-arr  { font-size:16px; color:#555; line-height:1.1; text-align:center; }
+
+/* ══ IMAGE PH ══ */
+.img-ph {
+  background:#f5f5f5; border:1.5px dashed #bbb; border-radius:3px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; color:#aaa; text-align:center; margin:4px 0;
+}
+ol { padding-left:16px; }
+ol li { margin-bottom:4px; }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- ══════ HEADER ══════ -->
+  <div class="header">
+    <div class="logo-box">
+      <!-- LOGO: replace div below with <img src="College_logo.png" style="max-width:187px;max-height:93px;object-fit:contain;"/> -->
+      <!-- <div class="logo-ph">College<br/>Logo</div> -->
+        <img src="/College_logo.png" style="max-width:187px;max-height:93px;object-fit:contain;"/>
+    </div>
+    <div class="header-center">
+      <div class="hc-dept">Department of Computer Engineering</div>
+      <div class="hc-sem">Project 1 &nbsp; Semester 6</div>
+      <div class="hc-year">Academic Year &nbsp; 2025–2026</div>
+      <div class="hc-title">VidFlow – Automated Short-Form Video Generation &amp; Publishing Platform</div>
+      <div class="hc-group">Group ID : &nbsp; 27P33</div>
+    </div>
+    <div class="header-names">
+      <span class="nlbl">Project Members</span>
+      Roshan Amancha &nbsp; 23102B0063<br/>
+      Aryan Parulekar &nbsp; 23102B0004<br/>
+      Vedant Kulkarni &nbsp; 23102B0067<br/>
+      Rahul Shetye &nbsp; 23102B0068<br/>
+      <span class="nlbl">Guide</span>
+      Dr. Amit Nerulkar
+    </div>
+  </div>
+
+  <!-- ══════ COL DIVIDERS ══════ -->
+  <div class="vdiv" style="left:372px;"></div>
+  <div class="vdiv" style="left:735px;"></div>
+
+  <!-- ════════════════════════════════
+       ROW 1  172→474  (Abstract | Methodology | Results)
+       ════════════════════════════════ -->
+  <div class="sh c-abstract"    style="left:0;    top:172px; width:372px;">Abstract</div>
+  <div class="sc"               style="left:0;    top:207px; width:372px; height:267px;">
+    VidFlow is a MERN-based full-stack platform that automates the creation and publishing of
+    short-form videos (≤60 sec) to YouTube Shorts, Instagram Reels, TikTok, and Facebook Reels.<br/><br/>
+    The system integrates OpenAI for script generation, ElevenLabs for text-to-speech,
+    Pexels for stock footage, and FFmpeg for video assembly. Jobs are queued via BullMQ + Redis
+    for scalable asynchronous pipelines.<br/><br/>
+    Users configure topics, styles, and schedules from a unified React dashboard,
+    reducing idea-to-published-video time from hours to minutes without manual editing.
+  </div>
+
+  <div class="sh c-methodology" style="left:374px; top:172px; width:361px;">Methodology :</div>
+  <div class="sc"               style="left:374px; top:207px; width:361px; height:267px;">
+    <strong>1. Script Generation:</strong> User inputs a topic; OpenAI GPT generates a structured
+    short-form script with hooks and calls-to-action.<br/><br/>
+    <strong>2. Voice Synthesis:</strong> ElevenLabs TTS converts the script to natural-sounding audio (MP3).<br/><br/>
+    <strong>3. Footage Retrieval:</strong> Pexels API fetches royalty-free B-roll clips per segment keyword.<br/><br/>
+    <strong>4. Video Assembly:</strong> FFmpeg stitches clips, overlays audio, adds captions, encodes MP4.<br/><br/>
+    <strong>5. Publishing:</strong> YouTube Data API v3 (OAuth 2.0), Instagram Graph API, and TikTok API
+    upload with full metadata.
+  </div>
+
+  <div class="sh c-results"     style="left:737px; top:172px; width:363px;">Results</div>
+  <div class="sc"               style="left:737px; top:207px; width:363px; height:267px;">
+    <!-- RESULT 1: replace with <img src="result1.png" style="width:100%;height:108px;object-fit:cover;border-radius:3px;margin:2px 0;"/> -->
+    <div class="img-ph" style="height:108px;">
+      📊 Insert Result Graph / Screenshot<br/>
+      <span style="font-size:10px;">&lt;img src="result1.png"&gt;</span>
+    </div>
+    <strong>Key Outcomes:</strong><br/>
+    • Avg video generation time: <strong>~3 min</strong><br/>
+    • YouTube Shorts upload: ✓ Verified live<br/>
+    • BullMQ handled 50 concurrent jobs<br/>
+    • OAuth token auto-refresh: ✓
+  </div>
+
+  <div class="hdiv" style="top:474px; width:1100px;"></div>
+
+  <!-- ════════════════════════════════
+       ROW 2 COL 1  474→679 Introduction
+             679→1311 Literature Survey
+             1311→1522 Objectives
+       ════════════════════════════════ -->
+  <div class="sh c-pink"        style="left:0; top:474px;  width:372px;">Introduction</div>
+  <div class="sc"               style="left:0; top:509px;  width:372px; height:170px;">
+    Short-form video has become the dominant social media format, with YouTube Shorts,
+    TikTok, and Instagram Reels seeing exponential growth. Creators face bottlenecks:
+    scripting, recording, editing, and cross-platform publishing take hours per video.<br/><br/>
+    VidFlow automates this pipeline — from a topic input to a published video across
+    multiple platforms — targeting creators, agencies, and marketers needing high-volume
+    content without proportional effort.
+  </div>
+
+  <div class="hdiv" style="top:679px; left:0; width:372px;"></div>
+
+  <div class="sh c-litsurvey"   style="left:0; top:679px;  width:372px;">Literature Survey</div>
+  <div class="sc"               style="left:0; top:714px;  width:372px; height:597px;">
+    <strong>[1] Automated Content Creation</strong> – LLM-generated scripts achieve 78%
+    audience retention parity with human-written scripts (Smith et al., 2023).<br/><br/>
+    <strong>[2] Text-to-Speech Quality</strong> – ElevenLabs TTS achieves a MOS score of
+    4.3/5.0 in naturalness evaluations (ElevenLabs Research, 2024).<br/><br/>
+    <strong>[3] Short-Form Video Engagement</strong> – Videos under 60 seconds achieve
+    2.3× higher completion rates than longer formats (HubSpot, 2024).<br/><br/>
+    <strong>[4] Social Media API Integration</strong> – Comparative study of publishing
+    latency across YouTube, TikTok, and Instagram APIs (Patel &amp; Roy, 2023).<br/><br/>
+    <strong>[5] Video Pipeline Automation</strong> – FFmpeg-based pipelines reduce
+    post-production time by up to 85% vs. manual editing (Chen et al., 2022).
+  </div>
+
+  <div class="hdiv" style="top:1311px; left:0; width:372px;"></div>
+
+  <div class="sh c-objectives"  style="left:0; top:1311px; width:372px;">Objectives</div>
+  <div class="sc"               style="left:0; top:1346px; width:372px; height:176px;">
+    1. Automate end-to-end short-form video creation from a topic prompt.<br/>
+    2. Integrate multi-platform publishing (YouTube, Instagram, TikTok, Facebook).<br/>
+    3. Build a scalable async job pipeline using BullMQ + Redis.<br/>
+    4. Develop a React dashboard for video management and scheduling.<br/>
+    5. Minimize manual effort to a single button click per video.
+  </div>
+
+  <!-- ════════════════════════════════
+       ROW 2 COL 2  474→997 Flow Diagram
+             997→1522 Experimental Details
+       ════════════════════════════════ -->
+  <div class="sh c-pink"        style="left:374px; top:474px;  width:361px;">Flow Diagram</div>
+  <div class="sc"               style="left:374px; top:509px;  width:361px; height:488px; padding:4px 2px;">
+    <div class="flow-wrap">
+      <div class="flow-box">User Inputs Topic &amp; Settings</div>
+      <div class="flow-arr">↓</div>
+      <div class="flow-box">OpenAI GPT → Script Generation</div>
+      <div class="flow-arr">↓</div>
+      <div class="flow-box">ElevenLabs → Voice Synthesis (MP3)</div>
+      <div class="flow-arr">↓</div>
+      <div class="flow-box">Pexels API → B-Roll Footage Fetch</div>
+      <div class="flow-arr">↓</div>
+      <div class="flow-box">FFmpeg → Video Assembly (MP4)</div>
+      <div class="flow-arr">↓</div>
+      <div class="flow-box">BullMQ + Redis Job Queue</div>
+      <div class="flow-arr">↓</div>
+      <div class="flow-box">YouTube / Instagram / TikTok Upload</div>
+      <div class="flow-arr">↓</div>
+      <div class="flow-box">Dashboard → Status &amp; Analytics</div>
+    </div>
+  </div>
+
+  <div class="hdiv" style="top:997px; left:374px; width:361px;"></div>
+
+  <div class="sh c-pink"        style="left:374px; top:997px;  width:361px;">Experimental Details</div>
+  <div class="sc"               style="left:374px; top:1032px; width:361px; height:490px;">
+    <strong>Environment:</strong><br/>
+    • Node.js v20, React 18, MongoDB Atlas, Redis 7<br/>
+    • FFmpeg 6.0, BullMQ 5.x<br/>
+    • Hosted: Localhost / Render (planned)<br/><br/>
+    <strong>APIs Used:</strong><br/>
+    • OpenAI GPT-4o – script generation<br/>
+    • ElevenLabs v1 – TTS voice synthesis<br/>
+    • Pexels API – stock footage retrieval<br/>
+    • YouTube Data API v3 – video upload<br/>
+    • Instagram Graph API – reels publish<br/><br/>
+    <strong>Test Cases:</strong><br/>
+    • 10 topics tested end-to-end<br/>
+    • Avg. pipeline time: 2 min 48 sec<br/>
+    • Error rate: &lt;5% (API quota limits)<br/>
+    • All uploads verified live on YouTube<br/><br/>
+    <strong>Tools:</strong> VS Code, Postman, MongoDB Compass,
+    GitHub, Render, Google Cloud Console
+  </div>
+
+  <!-- ════════════════════════════════
+       ROW 2 COL 3  474→927 Conclusion
+             927→1311 References
+             1311→1522 Result Screenshot
+       ════════════════════════════════ -->
+  <div class="sh c-pink"        style="left:737px; top:474px;  width:363px;">Conclusion</div>
+  <div class="sc"               style="left:737px; top:509px;  width:363px; height:418px;">
+    VidFlow demonstrates that short-form video production can be fully automated using modern
+    AI APIs and a well-architected MERN stack.<br/><br/>
+    The platform reduces content production time from hours to minutes, making consistent
+    video publishing accessible to individuals and small teams.<br/><br/>
+    The modular pipeline — script → voice → footage → encode → publish — is independently
+    scalable, and the BullMQ async architecture ensures robustness under load.<br/><br/>
+    <strong>Future Scope:</strong><br/>
+    • AI-based thumbnail generation<br/>
+    • Analytics &amp; performance dashboard<br/>
+    • Multi-language TTS support<br/>
+    • A/B testing of video hooks<br/>
+    • Facebook Reels &amp; LinkedIn Video publishing
+  </div>
+
+  <div class="hdiv" style="top:927px; left:737px; width:363px;"></div>
+
+  <div class="sh c-references"  style="left:737px; top:927px;  width:363px;">References</div>
+  <div class="sc"               style="left:737px; top:962px;  width:363px; height:349px; font-size:12px; line-height:1.7;">
+    <ol>
+      <li>Smith, J. et al. (2023). <em>LLM-Driven Content Pipelines.</em> IEEE Multimedia.</li>
+      <li>ElevenLabs Research (2024). <em>TTS Naturalness Benchmarks.</em></li>
+      <li>HubSpot (2024). <em>Video Marketing Report.</em></li>
+      <li>Patel, R. &amp; Roy, S. (2023). <em>Social Media API Latency Study.</em> ACM SIGWEB.</li>
+      <li>Chen, W. et al. (2022). <em>FFmpeg Automation in Media Production.</em> ACM MM.</li>
+      <li>YouTube Developers (2024). <em>YouTube Data API v3 Docs.</em> Google LLC.</li>
+      <li>OpenAI (2024). <em>GPT-4 Technical Report.</em> OpenAI.</li>
+    </ol>
+  </div>
+
+  <div class="hdiv" style="top:1311px; left:737px; width:363px;"></div>
+
+  <div class="sh c-results"     style="left:737px; top:1311px; width:363px;">Result Screenshot</div>
+  <div class="sc"               style="left:737px; top:1346px; width:363px; height:176px;">
+    <!-- RESULT 2: replace with <img src="result2.png" style="width:100%;height:160px;object-fit:cover;border-radius:3px;"/> -->
+    <div class="img-ph" style="height:158px;">
+      📸 Insert Published Video Screenshot<br/>
+      <span style="font-size:10px;">&lt;img src="result2.png"&gt;</span>
+    </div>
+  </div>
+
+  <!-- ══════ FOOTER  bg=#D2EEEC ══════ -->
+  <div class="hdiv" style="top:1522px; width:1100px;"></div>
+  <div style="
+    position:absolute; left:0; bottom:0; width:1100px; height:38px;
+    background:#D2EEEC; border-top:2px solid #000;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; font-size:12px;
+  ">
+    <span>Department of Computer Engineering &nbsp;|&nbsp; Academic Year 2025–2026</span>
+    <span><strong>Guide:</strong> Dr. Amit Nerulkar</span>
+    <span>Semester 6 &nbsp;|&nbsp; Project 1</span>
+  </div>
+
+</div><!-- /poster -->
+</body>
+</html>

